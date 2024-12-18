@@ -5,7 +5,6 @@ from game_object import GameObject
 from ball import Ball
 
 class Game:
-    #set screen size
     GAME_SPEED = 1
     PLAYER_SPEED = 0.5 * GAME_SPEED
     DEFENDER_SPEED = 0.25 * GAME_SPEED
@@ -31,7 +30,7 @@ class Game:
         pygame.font.init()
         
         #set screen size and title 
-        pygame.display.set_caption('Shoot-TO-Score')
+        pygame.display.set_caption('Soccer')
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))  
         
         # set background image
@@ -69,10 +68,11 @@ class Game:
         else:
             self.screen.blit(render, (x, y))
         
-    def end_screen(self, goals):
+    def end_screen(self, goals, misses):
         self.screen.blit(self.background_image, (0, 0))
+        self.render_text(f'Goals: {goals} Misses: {misses}', font_size=35, y_offset=-50)
         self.render_text(f'Accuracy: {int((goals/10)*100)}%')
-        self.render_text(text=f'Play again? y/n', font_size=50, y_offset=50)
+        self.render_text(text=f'Play again? y/n', font_size=50, y_offset=60)
         pygame.display.update()
          
         end_screen = True
@@ -98,6 +98,9 @@ class Game:
         ball_onscreen = -self.BALL_SIZE <= self.ball.x <= self.SCREEN_WIDTH-self.BALL_SIZE and \
             -self.BALL_SIZE <= self.ball.y <= self.SCREEN_HEIGHT
         return ball_onscreen
+
+    def hide_ball(self):
+        self.ball.y, self.ball.x = -20, -20
 
     def ball_hit_defender(self, defender):
         return (defender.x <= self.ball.x <= defender.x+self.DEFENDER_WIDTH) and \
@@ -185,9 +188,17 @@ class Game:
                         start_delay = game_time
                         ball_kicked = False
                         self.reset_ball()
-                    elif self.ball_hit_defender(self.defender1) or self.ball_hit_defender(self.defender2) or \
-                        self.ball_hit_cone(self.cone1) or self.ball_hit_cone(self.cone2):
-                        self.ball.y, self.ball.x = -20, -20
+                    elif self.ball_hit_defender(self.defender1) or self.ball_hit_defender(self.defender2):
+                        self.hide_ball()
+                    elif self.ball_hit_cone(self.cone1):
+                        self.hide_ball()
+                        self.cone1.y += -self.CONE_HEIGHT
+                        start_delay = game_time
+                    elif self.ball_hit_cone(self.cone2):
+                        self.hide_ball()
+                        self.cone2.y += -self.CONE_HEIGHT
+                        start_delay = game_time
+                        
                 else:
                     misses += 1
                     ball_kicked = False
@@ -224,7 +235,7 @@ class Game:
             if goals+misses >= 10:
                 break
         
-        self.end_screen(goals)
+        self.end_screen(goals, misses)
 
 Game().run_game()
 

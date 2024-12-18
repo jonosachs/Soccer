@@ -1,3 +1,5 @@
+# Soccer
+
 Soccer game using Python pygame
 
-![alt text](image.png)
+![alt text](soccer.gif)
